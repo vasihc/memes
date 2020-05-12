@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:memes/components/swipe_list.dart';
+import 'package:flutter_share/flutter_share.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -7,6 +8,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  Future<void> share() async {
+    await FlutterShare.share(
+      title: 'Lol Kek Memes',
+      text: 'Mem description',
+      linkUrl: 'https://forvovka.ru',
+      chooserTitle: 'Memes app'
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +53,7 @@ class _HomePageState extends State<HomePage> {
             mini: true,
             onPressed: () {},
             backgroundColor: Colors.white,
-            child: Icon(Icons.loop, color: Colors.yellow),
+            child: Icon(Icons.report, color: Colors.yellow),
           ),
           Padding(padding: EdgeInsets.only(right: 8.0)),
           FloatingActionButton(
@@ -61,9 +70,9 @@ class _HomePageState extends State<HomePage> {
           Padding(padding: EdgeInsets.only(right: 8.0)),
           FloatingActionButton(
             mini: true,
-            onPressed: () {},
+            onPressed: share,
             backgroundColor: Colors.white,
-            child: Icon(Icons.star, color: Colors.blue),
+            child: Icon(Icons.share, color: Colors.blue),
           ),
         ],
       ),
