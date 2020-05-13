@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:memes/widgets/swipeList.dart';
-import 'package:memes/widgets/scrollList.dart';
+// import 'package:memes/widgets/scrollList.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:memes/components/face_recognition/face_detection_camera.dart';
+
 
 class HomePage extends StatefulWidget {
   @override
@@ -44,7 +46,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       backgroundColor: Colors.white,
-      body: scrollList ? ScrollList() : SwipeList(context),
+      body: scrollList ? FaceDetectionFromLiveCamera() : SwipeList(context),
     );
   }
 }
