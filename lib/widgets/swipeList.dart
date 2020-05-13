@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:memes/api/memes_api.dart';
 import 'package:memes/models/meme.dart';
-import 'meme_card.dart';
+import 'package:flutter_share/flutter_share.dart';
+import 'package:memes/components/swipeCard.dart';
 import 'dart:math';
 
 List<Alignment> cardsAlign = [
@@ -22,34 +23,43 @@ class SwipeList extends StatefulWidget {
   }
 
   @override
-  _CardsSectionState createState() => _CardsSectionState();
+  _SwipeListState createState() => _SwipeListState();
 }
 
-class _CardsSectionState extends State<SwipeList>
+class _SwipeListState extends State<SwipeList>
     with SingleTickerProviderStateMixin {
   int cardsCounter = 0;
-  int page = 1;
+  bool loading = true;
   List<Meme> memes = List();
-  List<MemeCard> cards = List();
+  List<SwipeCard> cards = List();
   AnimationController _controller;
 
   final Alignment defaultFrontCardAlign = Alignment(0.0, 0.0);
   Alignment frontCardAlign;
   double frontCardRot = 0.0;
 
+  Future<void> share() async {
+    await FlutterShare.share(
+        title: 'Top Kek memes',
+        text: 'Top Kek memes',
+        linkUrl: memes[cardsCounter - 3].fileUrl,
+        chooserTitle: 'Memes app');
+  }
+
   @override
   void initState() {
     super.initState();
 
     // Init cards
-    fetchMemes(page, 10).then((res) {
+    fetchMemes(1, 3).then((res) {
       for (cardsCounter = 0; cardsCounter < 3; cardsCounter++) {
-        cards.add(MemeCard(res[cardsCounter]));
+        cards.add(SwipeCard(res[cardsCounter]));
       }
-       setState(() {
-         memes = res;
-         cards = cards;
-       });
+      setState(() {
+        memes = res;
+        cards = cards;
+        loading = false;
+      });
     });
 
     frontCardAlign = cardsAlign[2];
@@ -65,17 +75,38 @@ class _CardsSectionState extends State<SwipeList>
 
   @override
   Widget build(BuildContext context) {
-      return Expanded(
-        child: Stack(
-      children:
-      cards.length > 2 ?
-       <Widget>[
-        backCard(),
-        middleCard(),
-        frontCard(),
+    return Column(
+      children: <Widget>[
+        memesList(),
+        buttonsRow(),
+      ],
+    );
+  }
 
-        // Prevent swiping if the cards are animating
-        _controller.status != AnimationStatus.forward
+  Widget memesList() {
+    return Expanded(
+        child: Stack(
+            children: cards.length > 2
+                ? <Widget>[
+                    backCard(),
+                    middleCard(),
+                    frontCard(),
+                    controller(),
+                    loading
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                                SizedBox(height: 50),
+                                CircularProgressIndicator()
+                              ])
+                        : Container(),
+                  ]
+                : <Widget>[loader()]));
+  }
+
+  Widget controller() {
+    return // Prevent swiping if the cards are animating
+        _controller.status != AnimationStatus.forward && !loading
             ? SizedBox.expand(
                 child: GestureDetector(
                 // While dragging the first card
@@ -100,6 +131,7 @@ class _CardsSectionState extends State<SwipeList>
                 onPanEnd: (_) {
                   // If the front card was swiped far enough to count as swiped
                   if (frontCardAlign.x > 3.0 || frontCardAlign.x < -3.0) {
+                    scoreMem(frontCardAlign.x > 0 ? 1.0 : -0.5);
                     animateCards();
                   } else {
                     // Return to the initial rotation and alignment
@@ -110,10 +142,66 @@ class _CardsSectionState extends State<SwipeList>
                   }
                 },
               ))
-            : Container(),
-      ]
-      :  <Widget>[loader()]
-    ));
+            : Container();
+  }
+
+  Widget buttonsRow() {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 48.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          FloatingActionButton(
+            heroTag: "report",
+            mini: true,
+            onPressed: loading
+                ? null
+                : () {
+                    frontCardAlign = Alignment(-1.0, frontCardAlign.y);
+                    scoreMem(-1.0);
+                    animateCards();
+                  },
+            backgroundColor: Colors.white,
+            child: Icon(Icons.report, color: Colors.redAccent),
+          ),
+          Padding(padding: EdgeInsets.only(right: 8.0)),
+          FloatingActionButton(
+            heroTag: "dislike",
+            onPressed: loading
+                ? null
+                : () {
+                    frontCardAlign = Alignment(-1.0, frontCardAlign.y);
+                    scoreMem(-0.5);
+                    animateCards();
+                  },
+            backgroundColor: Colors.white,
+            child: Icon(Icons.close, color: Colors.red),
+          ),
+          Padding(padding: EdgeInsets.only(right: 8.0)),
+          FloatingActionButton(
+            heroTag: "like",
+            onPressed: loading
+                ? null
+                : () {
+                    frontCardAlign = Alignment(1.0, frontCardAlign.y);
+                    scoreMem(1.0);
+                    animateCards();
+                  },
+            backgroundColor: Colors.white,
+            child: Icon(Icons.favorite, color: Colors.green),
+          ),
+          Padding(padding: EdgeInsets.only(right: 8.0)),
+          FloatingActionButton(
+            heroTag: "share",
+            mini: true,
+            onPressed: memes.length == 0 ? null : share,
+            backgroundColor: Colors.white,
+            child: Icon(Icons.share, color: Colors.blue),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget backCard() {
@@ -151,46 +239,76 @@ class _CardsSectionState extends State<SwipeList>
             : frontCardAlign,
         child: Transform.rotate(
           angle: (pi / 180.0) * frontCardRot,
-          child: SizedBox.fromSize(size: cardsSize[0], child: cards[0]),
+          child: SizedBox.fromSize(
+              size: cardsSize[0],
+              child: Stack(
+                children: <Widget>[
+                  cards[0],
+                  Positioned(
+                      left: frontCardAlign.x > 0 ? null : 30.0,
+                      right: frontCardAlign.x > 0 ? 30.0 : null,
+                      top: 20.0,
+                      child: frontCardAlign.x == 0
+                          ? Container()
+                          : Material(
+                              borderRadius: BorderRadius.circular(12.0),
+                              color: frontCardAlign.x > 0
+                                  ? Color.fromRGBO(0, 255, 0, 0.05)
+                                  : Color.fromRGBO(255, 0, 0, 0.05),
+                              child: frontCardAlign.x > 0
+                                  ? Icon(
+                                      Icons.favorite,
+                                      color: Colors.green,
+                                      size: 60.0,
+                                    )
+                                  : Icon(Icons.close,
+                                      color: Colors.red, size: 60.0),
+                            )),
+                ],
+              )),
         ));
   }
 
   Widget loader() {
     return Align(
       alignment: Alignment(0, 0),
-      child: SizedBox.fromSize(
-          child: CircularProgressIndicator()),
+      child: SizedBox.fromSize(child: CircularProgressIndicator()),
     );
   }
 
   void changeCardsOrder() {
-     if (cardsCounter % 5 == 0) {
-        fetchMemes(page + 1, 10).then((res){
-          setState(() {
-              page = page + 1;
-              memes = memes + res;
-          });
-        });  
-    }  
-    if (memes.length > cardsCounter) {
-      setState(() {
-        // Swap cards (back card becomes the middle card; middle card becomes the front card, front card becomes a  bottom card)
-        var temp = cards[0];
-        cards[0] = cards[1];
-        cards[1] = cards[2];
-        cards[2] = temp;
-        cards[2] = MemeCard(memes[cardsCounter]);
-        cardsCounter++;
-        frontCardAlign = defaultFrontCardAlign;
-        frontCardRot = 0.0;
-      });
-    }
+    setState(() {
+      // Swap cards (back card becomes the middle card; middle card becomes the front card, front card becomes a  bottom card)
+      var temp = cards[0];
+      cards[0] = cards[1];
+      cards[1] = cards[2];
+      cards[2] = temp;
+      frontCardAlign = defaultFrontCardAlign;
+      frontCardRot = 0.0;
+    });
   }
 
   void animateCards() {
     _controller.stop();
     _controller.value = 0.0;
     _controller.forward();
+  }
+
+  void scoreMem(double score) {
+    int memeId = memes[cardsCounter - 3].id;
+    print('${memeId}_$score');
+    setState(() {
+      loading = true;
+    });
+    // todo: change fetch to score
+    fetchMemes(cardsCounter + 1, 1).then((res) {
+      setState(() {
+        loading = false;
+        cards[2] = SwipeCard(res[0]);
+        cardsCounter++;
+        memes = memes + res;
+      });
+    });
   }
 }
 
