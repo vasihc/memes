@@ -76,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
         onPressed: () {
           signIn(loginController.text, passwordController.text).then((success) {
             if (success) {
-              Navigator.pushNamed(context, '/profile');
+              Navigator.pushNamed(context, '/');
             } else {
               // todo: show error
             }

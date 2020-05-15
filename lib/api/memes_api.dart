@@ -30,22 +30,18 @@ Future<List<Meme>> fetchMemes(page, perPage) async {
 
 Future<List<Meme>> getFirstMemes() async {
   var token = await getToken();
-  print(token);
   if (token == null) {
     return fetchMemes(1, 3);
   }
   final response = await http.get(
     Uri.http(BASE_URL, FIRST_MEMES),
-    headers: {"x_forvovka_memes": token},
+    headers: {"cookie": "x_forvovka_memes=$token"},
   );
-
-  print(response.headers);
 
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response,
     // then parse the JSON.
-    print(json.decode(response.body));
-    return (json.decode(response.body)['memes'] as List).map((i) {
+    return (json.decode(response.body)['message'] as List).map((i) {
       return Meme.fromJson(i);
     }).toList();
   } else {
@@ -71,12 +67,13 @@ Future<List<Meme>> scoreAndGetMem(
       SET_REACTION,
     ),
     body: body,
-    headers: {"x_forvovka_memes": token},
+    headers: {"cookie": "x_forvovka_memes=$token"},
   );
 
+  print(body);
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response,
-
+    print(json.decode(response.body));
     return (json.decode(response.body)['memes'] as List).map((i) {
       return Meme.fromJson(i);
     }).toList();

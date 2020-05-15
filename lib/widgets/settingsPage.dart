@@ -16,7 +16,6 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-
     // getUser().then((user) {
     //   setState(() {
     //     login = user.name
@@ -32,9 +31,9 @@ class _SettingsPageState extends State<SettingsPage> {
     return Container(
         child: FloatingActionButton(
       child: Text('Logout'),
-      onPressed: () {
-        // var user =await getUser();
-        // deleteUser(user);
+      onPressed: () async {
+        var db = new DatabaseHelper();
+        await db.deleteUsers();
       },
     ));
   }

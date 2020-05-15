@@ -20,7 +20,7 @@ Future<bool> signIn(String login, String password) async {
 
   if (response.statusCode == 200) {
     var token =
-        json.decode(response.body)["message"]["password_digest"].toString();
+        json.decode(response.body)["message"]["auth_token"].toString();
     usr["token"] = token;
     createOrUpdate(usr);
     return true;
@@ -34,16 +34,10 @@ Future<bool> signIn(String login, String password) async {
 
 Future<bool> signUp(String login, String password) async {
   var usr = {'login': login.toString(), 'password': password.toString()};
-  print(usr);
   final response = await http.post(Uri.https(BASE_URL, SIGN_UP), body: usr);
 
   if (response.statusCode == 200) {
-    var token =
-        json.decode(response.body)["message"]["password_digest"].toString();
-    usr["token"] = token;
-    print(usr);
-    createOrUpdate(usr);
-    return true;
+    return signIn(login, password);
   } else {
     // If the server did not return a 200 OK response,
     // then throw an exception.
