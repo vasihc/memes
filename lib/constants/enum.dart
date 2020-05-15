@@ -1,0 +1,1 @@
+enum Reaction { like, dislike }

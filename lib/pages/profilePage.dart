@@ -1,7 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:memes/widgets/welcomePage.dart';
+import 'package:memes/widgets/settingsPage.dart';
+import 'package:memes/database/database_hepler.dart';
 
-class ProfilePage extends StatelessWidget {
+
+class ProfilePage extends StatefulWidget {
+  @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  bool isSignIn = false;
+  @override
+  void initState() {
+    super.initState();
+
+    getToken().then((token) {
+      setState(() {
+        isSignIn = token != null;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +45,7 @@ class ProfilePage extends StatelessWidget {
             icon: Icon(Icons.arrow_back, color: Colors.grey)),
       ),
       backgroundColor: Colors.white,
-      body: WelcomePage(),
+      body: isSignIn ? SettingsPage() : WelcomePage(),
     );
   }
 }

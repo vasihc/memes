@@ -4,6 +4,7 @@ import 'package:memes/models/meme.dart';
 import 'package:flutter_share/flutter_share.dart';
 import 'package:memes/components/swipeCard.dart';
 import 'dart:math';
+import 'package:memes/constants/enum.dart';
 
 List<Alignment> cardsAlign = [
   Alignment(0.0, 1.0),
@@ -51,7 +52,7 @@ class _SwipeListState extends State<SwipeList>
     super.initState();
 
     // Init cards
-    fetchMemes(1, 3).then((res) {
+    getFirstMemes().then((res) {
       for (cardsCounter = 0; cardsCounter < 3; cardsCounter++) {
         cards.add(SwipeCard(res[cardsCounter]));
       }
@@ -131,7 +132,7 @@ class _SwipeListState extends State<SwipeList>
                 onPanEnd: (_) {
                   // If the front card was swiped far enough to count as swiped
                   if (frontCardAlign.x > 3.0 || frontCardAlign.x < -3.0) {
-                    scoreMem(frontCardAlign.x > 0 ? 1.0 : -0.5);
+                    scoreMem(frontCardAlign.x > 0 ? Reaction.like : Reaction.dislike);
                     animateCards();
                   } else {
                     // Return to the initial rotation and alignment
@@ -159,7 +160,7 @@ class _SwipeListState extends State<SwipeList>
                 ? null
                 : () {
                     frontCardAlign = Alignment(-1.0, frontCardAlign.y);
-                    scoreMem(-1.0);
+                    scoreMem(Reaction.dislike);
                     animateCards();
                   },
             backgroundColor: Colors.white,
@@ -172,7 +173,7 @@ class _SwipeListState extends State<SwipeList>
                 ? null
                 : () {
                     frontCardAlign = Alignment(-1.0, frontCardAlign.y);
-                    scoreMem(-0.5);
+                    scoreMem(Reaction.dislike);
                     animateCards();
                   },
             backgroundColor: Colors.white,
@@ -185,7 +186,7 @@ class _SwipeListState extends State<SwipeList>
                 ? null
                 : () {
                     frontCardAlign = Alignment(1.0, frontCardAlign.y);
-                    scoreMem(1.0);
+                    scoreMem(Reaction.like);
                     animateCards();
                   },
             backgroundColor: Colors.white,
@@ -294,19 +295,17 @@ class _SwipeListState extends State<SwipeList>
     _controller.forward();
   }
 
-  void scoreMem(double score) {
+  void scoreMem(Reaction reaction) {
     int memeId = memes[cardsCounter - 3].id;
-    print('${memeId}_$score');
     setState(() {
       loading = true;
     });
-    // todo: change fetch to score
-    fetchMemes(cardsCounter + 1, 1).then((res) {
+    scoreAndGetMem(memeId, reaction, cardsCounter + 1).then((newMem) {
       setState(() {
         loading = false;
-        cards[2] = SwipeCard(res[0]);
+        cards[2] = SwipeCard(newMem[0]);
         cardsCounter++;
-        memes = memes + res;
+        memes = memes + newMem;
       });
     });
   }
