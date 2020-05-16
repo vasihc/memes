@@ -1,25 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:memes/resources/dimen.dart';
 
-Widget videoControlAction({IconData icon, String label, double size = 35}) {
+Widget videoControlAction(
+    {IconData icon, String label, double size = 35, Function onPress}) {
   return Padding(
-    padding: EdgeInsets.only(top: 10, bottom: 10),
-    child: Column(
-      children: <Widget>[
-        Icon(
-          icon,
-          color: Colors.grey,
-          size: size,
+      padding: EdgeInsets.only(top: 10, bottom: 10),
+      child: FloatingActionButton(
+        backgroundColor: Colors.transparent,
+        child: Column(
+          children: <Widget>[
+            Icon(
+              icon,
+              color: Colors.white,
+              size: size,
+            ),
+          ],
         ),
-        Padding(
-          padding: EdgeInsets.only(
-              top: Dimen.defaultTextSpacing, bottom: Dimen.defaultTextSpacing),
-          child: Text(
-            label ?? "",
-            style: TextStyle(fontSize: 10, color: Colors.grey),
-          ),
-        )
-      ],
-    ),
-  );
+        onPressed: onPress,
+      ));
 }

@@ -5,6 +5,9 @@ import 'package:flutter_share/flutter_share.dart';
 import 'package:memes/components/swipeCard.dart';
 import 'dart:math';
 import 'package:memes/constants/enum.dart';
+import 'package:mixpanel_analytics/mixpanel_analytics.dart';
+import 'dart:async';
+
 
 List<Alignment> cardsAlign = [
   Alignment(0.0, 1.0),
@@ -34,12 +37,16 @@ class _SwipeListState extends State<SwipeList>
   List<Meme> memes = List();
   List<SwipeCard> cards = List();
   AnimationController _controller;
+  MixpanelAnalytics _mixpanelAnalytics;
+  final _user$ = StreamController<String>.broadcast();
 
   final Alignment defaultFrontCardAlign = Alignment(0.0, 0.0);
   Alignment frontCardAlign;
   double frontCardRot = 0.0;
 
   Future<void> share() async {
+    await _mixpanelAnalytics.track(
+        event: 'share_mem', properties: {'mem_id': memes[cardsCounter - 3].id});
     await FlutterShare.share(
         title: 'Top Kek memes',
         text: 'Top Kek memes',
@@ -63,6 +70,15 @@ class _SwipeListState extends State<SwipeList>
       });
     });
 
+    _mixpanelAnalytics = MixpanelAnalytics(
+      token: 'e28bf9b75c9895878a9eb63704b1fc92',
+      userId$: _user$.stream,
+      verbose: true,
+      shouldAnonymize: true,
+      shaFn: (value) => value,
+      onError: (e) => print(e),
+    );
+
     frontCardAlign = cardsAlign[2];
 
     // Init the animation controller
@@ -72,6 +88,12 @@ class _SwipeListState extends State<SwipeList>
     _controller.addStatusListener((AnimationStatus status) {
       if (status == AnimationStatus.completed) changeCardsOrder();
     });
+  }
+
+  @override
+  void dispose() {
+    _user$.close();
+    super.dispose();
   }
 
   @override
@@ -129,11 +151,22 @@ class _SwipeListState extends State<SwipeList>
                   });
                 },
                 // When releasing the first card
-                onPanEnd: (_) {
+                onPanEnd: (_) async {
                   // If the front card was swiped far enough to count as swiped
                   if (frontCardAlign.x > 3.0 || frontCardAlign.x < -3.0) {
-                    scoreMem(frontCardAlign.x > 0 ? Reaction.like : Reaction.dislike);
+                    scoreMem(frontCardAlign.x > 0
+                        ? Reaction.like
+                        : Reaction.dislike);
+
                     animateCards();
+                    await _mixpanelAnalytics.track(
+                        event:
+                            frontCardAlign.x > 0 ? 'like_mem' : 'dislike_mem',
+                        properties: {
+                          'mem_id': memes[cardsCounter - 3].id,
+                          'feed': 'swipe',
+                          'method': 'swipe',
+                        });
                   } else {
                     // Return to the initial rotation and alignment
                     setState(() {
@@ -158,10 +191,15 @@ class _SwipeListState extends State<SwipeList>
             mini: true,
             onPressed: loading
                 ? null
-                : () {
+                : () async {
                     frontCardAlign = Alignment(-1.0, frontCardAlign.y);
                     scoreMem(Reaction.dislike);
                     animateCards();
+                    await _mixpanelAnalytics
+                        .track(event: 'report_mem', properties: {
+                      'mem_id': memes[cardsCounter - 3].id,
+                      'feed': 'swipe',
+                    });
                   },
             backgroundColor: Colors.white,
             child: Icon(Icons.report, color: Colors.redAccent),
@@ -171,10 +209,16 @@ class _SwipeListState extends State<SwipeList>
             heroTag: "dislike",
             onPressed: loading
                 ? null
-                : () {
+                : () async {
                     frontCardAlign = Alignment(-1.0, frontCardAlign.y);
                     scoreMem(Reaction.dislike);
                     animateCards();
+                    await _mixpanelAnalytics
+                        .track(event: 'dislike_mem', properties: {
+                      'mem_id': memes[cardsCounter - 3].id,
+                      'feed': 'swipe',
+                      'method': 'button',
+                    });
                   },
             backgroundColor: Colors.white,
             child: Icon(Icons.close, color: Colors.red),
@@ -184,10 +228,16 @@ class _SwipeListState extends State<SwipeList>
             heroTag: "like",
             onPressed: loading
                 ? null
-                : () {
+                : () async {
                     frontCardAlign = Alignment(1.0, frontCardAlign.y);
                     scoreMem(Reaction.like);
                     animateCards();
+                    await _mixpanelAnalytics
+                        .track(event: 'like_mem', properties: {
+                      'mem_id': memes[cardsCounter - 3].id,
+                      'feed': 'swipe',
+                      'method': 'button',
+                    });
                   },
             backgroundColor: Colors.white,
             child: Icon(Icons.favorite, color: Colors.green),

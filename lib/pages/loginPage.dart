@@ -72,9 +72,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _submitButton() {
-    return FloatingActionButton(
-        onPressed: () {
-          signIn(loginController.text, passwordController.text).then((success) {
+    return InkWell(
+        onTap: () {
+          signIn(loginController.text.toString(), passwordController.text.toString()).then((success) {
             if (success) {
               Navigator.pushNamed(context, '/');
             } else {
@@ -83,8 +83,7 @@ class _LoginPageState extends State<LoginPage> {
           });
         },
         child: Container(
-          width: MediaQuery.of(context).size.width,
-          padding: EdgeInsets.symmetric(vertical: 15),
+          padding: EdgeInsets.symmetric(vertical: 15,),
           alignment: Alignment.center,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(5)),
@@ -101,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                   colors: [Color(0xfffbb448), Color(0xfff7892b)])),
           child: Text(
             'Login',
-            style: TextStyle(fontSize: 20, color: Colors.white),
+            style: TextStyle(fontSize: 20, color: Colors.white,),
           ),
         ));
   }

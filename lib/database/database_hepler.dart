@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' as io;
+import 'package:memes/database/model/settings.dart';
 import 'package:memes/database/model/user.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -38,11 +39,27 @@ class DatabaseHelper {
     return res;
   }
 
+  Future<int> saveSettings(Settings settings) async {
+    var dbClient = await db;
+    int res = await dbClient.insert("Settings", settings.toMap());
+    return res;
+  }
+
   Future<User> getUser() async {
     var dbClient = await db;
     List<Map> list = await dbClient.rawQuery('SELECT * FROM User');
     if (list.length > 0) {
       return new User.fromMap(list[0]);
+    } else {
+      return null;
+    }
+  }
+
+  Future<Settings> getSettings() async {
+    var dbClient = await db;
+    List<Map> list = await dbClient.rawQuery('SELECT * FROM Settings');
+    if (list.length > 0) {
+      return new Settings.fromMap(list[0]);
     } else {
       return null;
     }
@@ -59,10 +76,21 @@ class DatabaseHelper {
     }
   }
 
+  Future<Settings> getSettingsValue(String key) async {
+    var dbClient = await db;
+    List<Map> list =
+        await dbClient.rawQuery('SELECT * FROM Settings WHERE key = ?', [key]);
+    if (list.length > 0) {
+      return new Settings.fromMap(list[0]);
+    } else {
+      return null;
+    }
+  }
+
   Future<int> deleteUsers() async {
     var dbClient = await db;
 
-    int res = await dbClient.rawDelete('DELETE * FROM User');
+    int res = await dbClient.delete('User');
     return res;
   }
 
@@ -74,6 +102,15 @@ class DatabaseHelper {
 
     return res > 0 ? true : false;
   }
+
+  Future<bool> updateSettings(Settings settings) async {
+    var dbClient = await db;
+
+    int res = await dbClient.update("Settings", settings.toMap(),
+        where: "key = ?", whereArgs: <String>[settings.key]);
+
+    return res > 0 ? true : false;
+  }
 }
 
 Future<String> getToken() async {
@@ -81,4 +118,3 @@ Future<String> getToken() async {
   var user = await db.getUser();
   return user != null ? user.token : null;
 }
-

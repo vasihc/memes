@@ -67,14 +67,14 @@ Future<List<Meme>> scoreAndGetMem(
       SET_REACTION,
     ),
     body: body,
-    headers: {"cookie": "x_forvovka_memes=$token"},
+    // headers: {"cookie": "x_forvovka_memes=$token"},
   );
 
-  print(body);
+  print(response.headers);
+
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response,
-    print(json.decode(response.body));
-    return (json.decode(response.body)['memes'] as List).map((i) {
+    return (json.decode(response.body)['message'] as List).map((i) {
       return Meme.fromJson(i);
     }).toList();
   } else {

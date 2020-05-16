@@ -72,9 +72,9 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   Widget _submitButton() {
-    return FloatingActionButton(
-        onPressed: () {
-          signUp(loginController.text, passwordController.text).then((success) {
+    return InkWell(
+        onTap: () {
+          signUp(loginController.text.toString(), passwordController.text.toString()).then((success) {
             if (success) {
               Navigator.pushNamed(context, '/');
             } else {

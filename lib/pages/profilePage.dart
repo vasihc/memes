@@ -3,7 +3,6 @@ import 'package:memes/widgets/welcomePage.dart';
 import 'package:memes/widgets/settingsPage.dart';
 import 'package:memes/database/database_hepler.dart';
 
-
 class ProfilePage extends StatefulWidget {
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -22,6 +21,21 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  Widget _backButton() {
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        child: Container(
+          padding: EdgeInsets.only(left: 0, top: 10, bottom: 10),
+          child: Icon(Icons.keyboard_arrow_left, color: Colors.black),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,11 +52,7 @@ class _ProfilePageState extends State<ProfilePage> {
         elevation: 0.0,
         centerTitle: true,
         backgroundColor: Colors.white,
-        leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: Icon(Icons.arrow_back, color: Colors.grey)),
+        leading: _backButton(),
       ),
       backgroundColor: Colors.white,
       body: isSignIn ? SettingsPage() : WelcomePage(),
