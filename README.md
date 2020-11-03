@@ -1,16 +1,18 @@
-# memes
+# TopKek - smart memes feed.
 
-A new Flutter project.
+![Demo](./demo.gif)
 
-## Getting Started
+## About:
+This is [Flutter](https://flutter.dev) mobile application which show you memes feed as you like. 
+The app contains 2 options of feed:
+1) Tinder view - you should swipe to set reaction.
+2) TikTok view - just allow fron camera and swipe memes. App automaticly detect smile (using [Firebase ML kit](https://firebase.google.com/docs/ml-kit/detect-faces) ) on you face and set reaction.
 
-This project is a starting point for a Flutter application.
+## ToDo: 
+- [ ] Improve recomendation system
+- [ ] Redesign app
+- [ ] Add more sources for memes data
+- [ ] Add ability to choose subreditcs for improve recomendation predicts.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Beta testing:
+If you want to be a Beta-Tester - [apply](https://appdistribution.firebase.dev/i/7c2S4dYK). 
